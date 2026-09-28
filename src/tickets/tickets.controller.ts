@@ -32,6 +32,15 @@ import {
   UserRole,
 } from '../users/schemas/user.schema';
 
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    sub: string;
+    email?: string;
+    role?: string;
+  };
+}
+
 @ApiTags('Tickets')
 @ApiBearerAuth('access-token')
 @Controller('tickets')
@@ -84,6 +93,20 @@ export class TicketsController {
   async findQueue() {
     return this.ticketsService.findQueue();
   }
+
+
+ @Get('assigned')
+@Roles(UserRole.AGENT)
+@ApiOperation({
+  summary: 'Get tickets assigned to the current agent',
+  description:
+    'Returns all In Progress tickets currently assigned to the authenticated agent.',
+})
+async assigned(@Req() request: AuthenticatedRequest) {
+  return this.ticketsService.findAssigned(
+    request.user.sub,
+  );
+}
 
   @Get(':ticketId')
   @Roles(

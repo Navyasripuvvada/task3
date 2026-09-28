@@ -132,6 +132,52 @@ export class TicketsService {
     };
   });
 }
+  
+
+
+
+async findAssigned(agentId: string) {
+  const now = new Date();
+
+  await this.ticketModel.updateMany(
+    {
+      status: { $ne: TicketStatus.RESOLVED },
+      slaDeadline: { $lte: now },
+      isOverdue: false,
+    },
+    {
+      $set: {
+        isOverdue: true,
+      },
+    },
+  );
+
+  const tickets = await this.ticketModel
+    .find({
+      assignedAgent: agentId,
+      status: TicketStatus.IN_PROGRESS,
+    })
+    .sort({ createdAt: 1 })
+    .lean();
+
+  return tickets.map((ticket) => {
+    const remainingMilliseconds =
+      ticket.slaDeadline.getTime() - now.getTime();
+
+    return {
+      ...ticket,
+      timeRemainingSeconds: Math.max(
+        0,
+        Math.floor(remainingMilliseconds / 1000),
+      ),
+      overdue:
+        ticket.isOverdue ||
+        remainingMilliseconds <= 0,
+    };
+  });
+}
+
+ 
 
   async findOne(
     ticketId: string,
