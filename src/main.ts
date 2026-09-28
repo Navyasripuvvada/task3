@@ -1,6 +1,10 @@
+import { config } from 'dotenv';
+
+
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+config();
 
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 

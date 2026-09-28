@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -11,18 +10,9 @@ import { Ticket, TicketSchema } from './tickets/schemas/ticket.schema';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     ScheduleModule.forRoot(),
 
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
-    }),
+    MongooseModule.forRoot(process.env.MONGODB_URI as string),
 
     MongooseModule.forFeature([
       {
@@ -34,9 +24,10 @@ import { Ticket, TicketSchema } from './tickets/schemas/ticket.schema';
         schema: TicketSchema,
       },
     ]),
-      UsersModule,
-     AuthModule,
-     TicketsModule,
+
+    UsersModule,
+    AuthModule,
+    TicketsModule,
   ],
 })
 export class AppModule {}
