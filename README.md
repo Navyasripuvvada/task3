@@ -199,6 +199,12 @@ JWT_EXPIRES_IN=1d
 
 Do not commit `.env` files or database credentials to GitHub.
 
+## Deploy to Vercel
+
+Import the repository into Vercel and set **Root Directory** to `backend`. Add `MONGODB_URI` and `JWT_SECRET` as Environment Variables for the Production environment (and Preview if needed). Set `FRONTEND_URL` to the deployed frontend's origin if browser requests should be allowed. Do not include secrets in source code or commit them.
+
+The Vercel function entry point is `api/index.ts`; `vercel.json` forwards requests to the Nest application. The in-process `@nestjs/schedule` jobs are not reliable in serverless functions because instances can pause between requests. Move those jobs to Vercel Cron or run the backend on a persistent service if the scheduled ticket updates must run continuously.
+
 ## Installation
 
 Clone the repository:

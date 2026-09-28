@@ -1,19 +1,19 @@
-import { config } from 'dotenv';
-
-
-
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-config();
-
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+export async function createApp() {
   const app = await NestFactory.create(AppModule);
-  
-  app.enableCors({ origin:["http://localhost:3000",'http://localhost:5173',],
+
+  const corsOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+  ].filter((origin): origin is string => Boolean(origin));
+
+  app.enableCors({ origin: corsOrigins,
       methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
       credentials: true,});
 
@@ -40,6 +40,11 @@ async function bootstrap() {
 
   SwaggerModule.setup('api', app, document);
 
+  return app;
+}
+
+async function bootstrap() {
+  const app = await createApp();
   await app.listen(process.env.PORT ?? 5000);
 
   console.log(
@@ -50,4 +55,9 @@ async function bootstrap() {
   );
 }
 
-bootstrap();
+if (require.main === module) {
+  bootstrap().catch((error: unknown) => {
+    console.error('Failed to start application', error);
+    process.exit(1);
+  });
+}
